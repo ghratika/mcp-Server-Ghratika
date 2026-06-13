@@ -38,6 +38,8 @@ import sys
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 # ── Load environment variables ────────────────────────────────
 load_dotenv()
@@ -92,6 +94,12 @@ register_docs_resources(mcp)
 logger.info("Registering Google Workspace prompts…")
 from prompts.google_prompts import register_google_prompts  # noqa: E402
 register_google_prompts(mcp)
+
+# ── Health check endpoint (required by Railway) ───────────────
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> JSONResponse:
+    """Railway healthcheck endpoint — returns 200 OK when server is running."""
+    return JSONResponse({"status": "ok", "server": "Google Workspace MCP Server"})
 
 logger.info(
     "✓ Google Workspace MCP Server ready  "
