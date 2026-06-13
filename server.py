@@ -42,6 +42,12 @@ from mcp.server.fastmcp import FastMCP
 # ── Load environment variables ────────────────────────────────
 load_dotenv()
 
+# ── Reconstruct base64 credentials if running in Railway ────────
+from auth.startup import reconstruct_credentials
+reconstruct_credentials()
+
+IS_RAILWAY = os.getenv("RAILWAY_ENVIRONMENT") is not None
+
 # ── Configure logging (MUST use stderr for stdio transport) ───
 log_level = getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO)
 logging.basicConfig(
@@ -119,7 +125,10 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.sse:
+    # Use SSE by default on Railway, stdio locally
+    use_sse = args.sse or IS_RAILWAY
+
+    if use_sse:
         logger.info("Starting SSE server on %s:%d …", args.host, args.port)
         mcp.run(transport="sse")
     else:
