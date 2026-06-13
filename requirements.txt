@@ -1,0 +1,21 @@
+# MCP Framework
+mcp[cli]>=1.0.0
+
+# Google API Client Libraries
+google-api-python-client>=2.100.0
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
+
+# HTML Email Parsing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Async HTTP (used internally by MCP)
+httpx>=0.25.0
+
+# Markdown conversion utilities
+markdownify>=0.11.6

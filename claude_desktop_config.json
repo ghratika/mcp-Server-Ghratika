@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "google-workspace": {
+      "command": "python",
+      "args": [
+        "C:/Users/Lavanya gupta/OneDrive/Documents/Ghratika/MCP-SERVER/server.py"
+      ],
+      "env": {
+        "GOOGLE_CREDENTIALS_PATH": "C:/Users/Lavanya gupta/OneDrive/Documents/Ghratika/MCP-SERVER/credentials.json",
+        "GOOGLE_TOKEN_PATH": "C:/Users/Lavanya gupta/OneDrive/Documents/Ghratika/MCP-SERVER/token.json",
+        "LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
