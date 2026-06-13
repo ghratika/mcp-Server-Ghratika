@@ -130,7 +130,9 @@ def main() -> None:
 
     if use_sse:
         logger.info("Starting SSE server on %s:%d …", args.host, args.port)
-        mcp.run(transport="sse", host=args.host, port=args.port)
+        mcp.settings.host = args.host
+        mcp.settings.port = args.port
+        mcp.run(transport="sse")
     else:
         logger.info("Starting stdio server…")
         mcp.run(transport="stdio")
