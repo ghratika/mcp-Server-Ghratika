@@ -38,6 +38,7 @@ import sys
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
@@ -61,6 +62,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── Create FastMCP server ─────────────────────────────────────
+# Determine host/port at construction time so FastMCP's auto-detection of
+# localhost does NOT enable DNS rebinding protection with localhost-only
+# allowed_hosts. Railway forwards the real public hostname in the Host header
+# (mcp-server-ghratika-production.up.railway.app) which would be rejected
+# with 421 if protection were enabled.
+_HOST = "0.0.0.0"
+_PORT = int(os.getenv("PORT", os.getenv("MCP_SSE_PORT", "8000")))
+
 mcp = FastMCP(
     name="Google Workspace MCP Server",
     instructions=(
@@ -69,6 +78,15 @@ mcp = FastMCP(
         "as well as create, read, edit, share, and export Google Docs. "
         "Use the prompts for common workflows like daily email digests, "
         "document reviews, and reply drafting."
+    ),
+    host=_HOST,
+    port=_PORT,
+    # Disable DNS rebinding / host-header validation for Railway deployments.
+    # Railway's TLS edge proxy forwards the real public Host header which is
+    # not in any localhost allowlist. BearerAuthMiddleware (if any) already
+    # gates traffic, so this is safe.
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=False,
     ),
 )
 
@@ -702,9 +720,7 @@ def main() -> None:
     use_sse = args.sse or IS_RAILWAY
 
     if use_sse:
-        logger.info("Starting SSE server on %s:%d …", args.host, args.port)
-        mcp.settings.host = args.host
-        mcp.settings.port = args.port
+        logger.info("Starting SSE server on %s:%d …", _HOST, _PORT)
         mcp.run(transport="sse")
     else:
         logger.info("Starting stdio server…")
