@@ -242,11 +242,18 @@ def register_docs_tools(mcp: FastMCP) -> None:
                     "text": text,
                 }
             }]
+            logger.info(
+                "update_document: mode=append doc=%s insert_index=%d text_len=%d",
+                document_id, insert_index, len(text),
+            )
 
         result = docs.documents().batchUpdate(
             documentId=document_id, body={"requests": requests}
         ).execute()
-        logger.debug("batchUpdate replies: %s", result.get("replies", []))
+        logger.info(
+            "batchUpdate executed: doc=%s replies=%s",
+            document_id, result.get("replies", []),
+        )
 
         return {
             "id": document_id,
