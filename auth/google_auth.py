@@ -173,5 +173,5 @@ def get_drive_service():
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     creds = get_credentials()
-    print(f"✓ Authenticated successfully! Token saved to {_TOKEN_PATH}")
-    print(f"  Valid: {creds.valid}  | Expiry: {creds.expiry}")
+    print(f"[OK] Authenticated successfully! Token saved to {_TOKEN_PATH}")
+    print(f"     Valid: {creds.valid}  | Expiry: {creds.expiry}")
