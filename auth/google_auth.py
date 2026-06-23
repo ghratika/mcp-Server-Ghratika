@@ -48,10 +48,18 @@ SCOPES: list[str] = [
     "https://www.googleapis.com/auth/drive",
 ]
 
+# Root of the MCP-SERVER package — two levels up from this file
+# (auth/google_auth.py → auth/ → MCP-SERVER/)
+# Using an absolute anchor means the paths are correct regardless of
+# what the process CWD is when the server starts.
+_SERVER_ROOT = Path(__file__).resolve().parent.parent
+
 _CREDENTIALS_PATH = Path(
-    os.getenv("GOOGLE_CREDENTIALS_PATH", "credentials.json")
+    os.getenv("GOOGLE_CREDENTIALS_PATH", str(_SERVER_ROOT / "credentials.json"))
 )
-_TOKEN_PATH = Path(os.getenv("GOOGLE_TOKEN_PATH", "token.json"))
+_TOKEN_PATH = Path(
+    os.getenv("GOOGLE_TOKEN_PATH", str(_SERVER_ROOT / "token.json"))
+)
 
 
 def get_credentials() -> Credentials:
