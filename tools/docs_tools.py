@@ -232,21 +232,27 @@ def register_docs_tools(mcp: FastMCP) -> None:
             end_index = doc.get("body", {}).get("content", [{}])[-1].get(
                 "endIndex", 1
             )
+            # Google Docs API requires insert index >= 1.
+            # A fresh empty doc has end_index == 1, so end_index - 1 == 0
+            # which the API rejects silently. Clamp to a minimum of 1.
+            insert_index = max(1, end_index - 1)
             requests = [{
                 "insertText": {
-                    "location": {"index": end_index - 1},
+                    "location": {"index": insert_index},
                     "text": text,
                 }
             }]
 
-        docs.documents().batchUpdate(
+        result = docs.documents().batchUpdate(
             documentId=document_id, body={"requests": requests}
         ).execute()
+        logger.debug("batchUpdate replies: %s", result.get("replies", []))
 
         return {
             "id": document_id,
             "mode": mode,
             "characters_written": len(text),
+            "replies": result.get("replies", []),
             "status": "updated",
         }
 
