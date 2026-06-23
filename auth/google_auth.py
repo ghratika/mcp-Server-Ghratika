@@ -6,8 +6,9 @@ Handles the complete OAuth2 lifecycle for Google APIs.
 Flow:
   1. Read credential/token paths from environment variables.
   2. If a saved token exists → load and auto-refresh if expired.
-  3. If no token (first run) → launch browser consent flow and
-     save the resulting token for future runs.
+  3. If no token, or the token is invalid and cannot be refreshed →
+     raise RuntimeError on headless/Railway environments (no browser
+     available), or launch browser consent flow on local dev machines.
 
 Environment variables (see .env.example):
   GOOGLE_CREDENTIALS_PATH  Path to credentials.json  (default: credentials.json)
@@ -100,10 +101,24 @@ def get_credentials() -> Credentials:
         logger.info("Refreshing expired Google token…")
         creds.refresh(Request())
     elif not creds or not creds.valid:
+        # Detect headless environments: Railway, generic CI, or no DISPLAY on Linux.
+        is_headless = bool(
+            os.getenv("RAILWAY_ENVIRONMENT")
+            or os.getenv("CI")
+            or (sys.platform.startswith("linux") and not os.getenv("DISPLAY"))
+        )
+        if is_headless:
+            raise RuntimeError(
+                "No valid Google token found and running in a headless environment "
+                "(Railway/CI) — cannot launch browser OAuth flow.\n"
+                "Fix: set GOOGLE_TOKEN_B64 in Railway environment variables to a "
+                "base64-encoded token.json generated on a local machine with:\n"
+                "  python auth/google_auth.py"
+            )
         logger.info(
             "No valid token found. Starting OAuth2 browser flow…\n"
-            "(If running headlessly, set GOOGLE_TOKEN_PATH to a pre-generated "
-            "token.json.)"
+            "(If running headlessly, set GOOGLE_TOKEN_B64 to a pre-generated "
+            "base64-encoded token.json.)"
         )
         flow = InstalledAppFlow.from_client_secrets_file(
             str(_CREDENTIALS_PATH), SCOPES
